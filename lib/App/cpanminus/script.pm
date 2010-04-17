@@ -409,12 +409,23 @@ sub bootstrap_local_lib {
 
     $self->diag(<<DIAG);
 !
-! Can't write to $Config{installsitelib} and $Config{installsitebin}: Installing modules to $ENV{HOME}/perl5
-! To turn off this warning, you have to do one of the following:
-!   - run me as a root or with --sudo option (to install to $Config{installsitelib} and $Config{installsitebin})
-|   - run me with --local-lib option e.g. cpanm --local-lib=~/perl5
-!   - Set PERL_CPANM_OPT="--local-lib=~/perl5" environment variable (in your shell rc file)
-!   - Configure local::lib in your shell to set PERL_MM_OPT etc.
+! I don't have permission to write to to Perl's shared installation
+! directories $Config{installsitelib} and
+! $Config{installsitebin}.
+!
+! Instead, I'll install them in $ENV{HOME}/perl5
+!
+! If you want to use cpan to install modules for all users:
+!   - Run me as a root or with the --sudo option (to install to
+!     $Config{installsitelib} and $Config{installsitebin})
+!
+! If you don't want to install modules for all users, you
+! can disable this warning by doing any of the following:
+!
+!   - Run me with --local-lib option e.g. $0 --local-lib=~/perl5
+!   - Set the PERL_CPANM_OPT="--local-lib=~/perl5" environment variable
+!     in your shell rc file
+!   - Configure local::lib (run "perldoc local::lib" for more info)
 !
 DIAG
     sleep 2;
