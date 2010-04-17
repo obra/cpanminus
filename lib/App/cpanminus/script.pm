@@ -964,7 +964,7 @@ sub install_deps {
     }
 
     if (@install) {
-        $self->diag("==> Found dependencies: " . join(", ", @install) . "\n");
+        $self->diag("\n ==> Installing dependencies: " . join(", ", @install) . "\n");
     }
 
     for my $mod (@install) {
@@ -1006,27 +1006,30 @@ sub build_stuff {
 
     # get more configure_requires
     $self->run_hooks(pre_configure => { meta => $meta, deps => \@config_deps });
-    $self->install_deps($dir, $depth, @config_deps);
+    my $configure_deps = $self->install_deps($dir, $depth, @config_deps);
+    diag("$module: ") if (@$configure_deps);
+
 
     # Let plugins to take over the build process -- dzil for instance
     my $builder = $self->run_hook(build_dist => { meta => $meta });
     return $builder->() if $builder;
 
     my $target = $meta->{name} ? "$meta->{name}-$meta->{version}" : $dir;
-    $self->diag_progress("Configuring $target");
+    $self->diag_progress("configuring...");
 
     my $configure_state = $self->configure_this($meta->{name});
 
-    $self->diag_ok($configure_state->{configured_ok} ? "OK" : "N/A");
+    $self->diag_ok($configure_state->{configured_ok} ? "OK" : "N/A") if ($self->{verbose});
 
     my @deps = $self->find_prereqs($meta);
 
     $self->run_hooks(find_deps => { deps => \@deps, module => $module, meta => $meta });
 
-    $self->install_deps($dir, $depth, @deps);
+    my $prereqs = $self->install_deps($dir, $depth, @deps);
+    $self->diag("$module: ") if (@$prereqs);
 
     if ($self->{installdeps} && $depth == 0) {
-        $self->diag("<== Installed dependencies for $module. Finishing.\n");
+        $self->diag(" <== Installed dependencies for $module. Finishing.\n");
         return 1;
     }
 
