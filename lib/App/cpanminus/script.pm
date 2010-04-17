@@ -1103,7 +1103,7 @@ sub build_stuff {
         return 1;
     } else {
         my $msg = "Building $distname failed";
-        $self->diag_fail("Installing $module failed. See $self->{log} for details.");
+        $self->diag_fail("Installation of $module failed. See $self->{log} for details.");
         $self->run_hooks(build_failure => {
             module => $module, build_dir => $dir, meta => $meta,
             message => $msg, dist => $distname,
