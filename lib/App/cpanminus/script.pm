@@ -697,8 +697,13 @@ sub install_module {
         $self->diag("Already tried $module. Skipping.\n");
         return;
     }
+    if ($self->{cmd} !~  /^(?:look|info)$/) {
+        $self->check_libs;
+    }
 
-    # FIXME return richer data strture including version number here
+    $self->diag("$module: ");
+
+    # FIXME return richer data structure including version number here
     # so --skip-installed option etc. can skip it
     my $dir = $self->fetch_module($module);
 
@@ -728,7 +733,6 @@ sub install_module {
             $self->diag_fail("You don't seem to have a SHELL :/");
         }
     } else {
-        $self->check_libs;
         $self->build_stuff($module, $dir, $depth);
     }
 }
