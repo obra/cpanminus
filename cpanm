@@ -1318,6 +1318,7 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
   
       $self->chdir($self->{base});
       $self->chdir($dir) if $dir;
+      return (\@install);
   }
   
   sub build_stuff {

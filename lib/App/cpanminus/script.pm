@@ -973,6 +973,7 @@ sub install_deps {
 
     $self->chdir($self->{base});
     $self->chdir($dir) if $dir;
+    return (\@install);
 }
 
 sub build_stuff {
