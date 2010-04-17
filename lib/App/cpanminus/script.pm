@@ -624,6 +624,9 @@ sub build {
 sub test {
     my($self, $cmd, $force_cb) = @_;
     return 1 if $self->{notest};
+
+    $self->diag( "testing... " );
+
     local $ENV{AUTOMATED_TESTING} = 1;
 
     return 1 if $self->run_timeout($cmd,  $self->{test_timeout});
@@ -1038,14 +1041,26 @@ sub build_stuff {
     };
 
     my $installed;
+
+    my $progress = sub {
+        my ( $target, $module ) = (@_);
+        if ( $self->{verbose} ) {
+            $self->diag_progress( "building $target for $module" );
+        }
+        else {
+            $self->diag_progress( "building..." );
+
+        }
+    };
+
     if ($configure_state->{use_module_build} && -e 'Build' && -f _) {
-        $self->diag_progress("Building " . ($self->{notest} ? "" : "and testing ") . "$target for $module");
+        $progress->($target, $module);
         $self->build([ $self->{perl}, "./Build" ]) &&
         $self->test([ $self->{perl}, "./Build", "test" ], $testdiag) &&
         $self->install([ $self->{perl}, "./Build", "install" ], [ "--uninst", 1 ]) &&
         $installed++;
     } elsif ($self->{make} && -e 'Makefile') {
-        $self->diag_progress("Building " . ($self->{notest} ? "" : "and testing ") . "$target for $module");
+        $progress->($target, $module);
         $self->build([ $self->{make} ]) &&
         $self->test([ $self->{make}, "test" ], $testdiag) &&
         $self->install([ $self->{make}, "install" ], [ "UNINST=1" ]) &&
