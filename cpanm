@@ -852,7 +852,7 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
       my($self, $msg) = @_;
       chomp $msg;
       $self->{in_progress} = 1;
-      $self->_diag("$msg ... ");
+      $self->_diag("$msg ");
       $self->log("$msg\n");
   }
   
@@ -969,6 +969,9 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
   sub test {
       my($self, $cmd, $force_cb) = @_;
       return 1 if $self->{notest};
+  
+      $self->diag( "testing... " );
+  
       local $ENV{AUTOMATED_TESTING} = 1;
   
       return 1 if $self->run_timeout($cmd,  $self->{test_timeout});
@@ -1047,7 +1050,7 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
       }
   
       $self->diag("$module: ");
-
+  
       # FIXME return richer data structure including version number here
       # so --skip-installed option etc. can skip it
       my $dir = $self->fetch_module($module);
@@ -1132,7 +1135,12 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
           }
   
           $self->chdir($self->{base});
-          $self->diag_progress("Fetching $uri");
+          if ($self->{verbose}) {
+              $self->diag_progress("Fetching $uri");
+          } else {
+              $self->diag_progress("downloading...");
+          }
+  
   
           my $name = File::Basename::basename $uri;
   
@@ -1165,7 +1173,7 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
               next;
           }
   
-          $self->diag_ok;
+          $self->diag_ok if ($self->{verbose});
   
           # TODO add more metadata so plugins can tell how to verify and pass through
           my $args = { file => $file, uri => $uri, fail => 0 };
@@ -1353,7 +1361,7 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
       $self->run_hooks(pre_configure => { meta => $meta, deps => \@config_deps });
       my $configure_deps = $self->install_deps($dir, $depth, @config_deps);
       diag("$module: ") if (@$configure_deps);
-
+  
   
       # Let plugins to take over the build process -- dzil for instance
       my $builder = $self->run_hook(build_dist => { meta => $meta });
@@ -1383,7 +1391,7 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
       };
   
       my $installed;
-
+  
       my $progress = sub {
           my ( $target, $module ) = (@_);
           if ( $self->{verbose} ) {
@@ -1391,10 +1399,10 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
           }
           else {
               $self->diag_progress( "building..." );
-
+  
           }
       };
-
+  
       if ($configure_state->{use_module_build} && -e 'Build' && -f _) {
           $progress->($target, $module);
           $self->build([ $self->{perl}, "./Build" ]) &&
@@ -1429,9 +1437,9 @@ $fatpacked{"App/cpanminus/script.pm"} = <<'APP_CPANMINUS_SCRIPT';
           my $how = $reinstall ? "reinstalled $distname"
                   : $local     ? "installed $distname (upgraded from $local)"
                                : "installed $distname" ;
-          my $msg = "Successfully $how";
+          my $msg = "$module: Successfully $how";
           $self->diag_ok;
-          $self->diag("$msg\n");
+          $self->chat("$msg\n");
           $self->run_hooks(install_success => {
               module => $module, build_dir => $dir, meta => $meta,
               local => $local, reinstall => $reinstall, depth => $depth,

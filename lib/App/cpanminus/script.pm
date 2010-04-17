@@ -507,7 +507,7 @@ sub diag_progress {
     my($self, $msg) = @_;
     chomp $msg;
     $self->{in_progress} = 1;
-    $self->_diag("$msg ... ");
+    $self->_diag("$msg ");
     $self->log("$msg\n");
 }
 
@@ -790,7 +790,12 @@ sub fetch_module {
         }
 
         $self->chdir($self->{base});
-        $self->diag_progress("Fetching $uri");
+        if ($self->{verbose}) {
+            $self->diag_progress("Fetching $uri");
+        } else {
+            $self->diag_progress("downloading...");
+        }
+
 
         my $name = File::Basename::basename $uri;
 
@@ -823,7 +828,7 @@ sub fetch_module {
             next;
         }
 
-        $self->diag_ok;
+        $self->diag_ok if ($self->{verbose});
 
         # TODO add more metadata so plugins can tell how to verify and pass through
         my $args = { file => $file, uri => $uri, fail => 0 };
@@ -1087,9 +1092,9 @@ sub build_stuff {
         my $how = $reinstall ? "reinstalled $distname"
                 : $local     ? "installed $distname (upgraded from $local)"
                              : "installed $distname" ;
-        my $msg = "Successfully $how";
+        my $msg = "$module: Successfully $how";
         $self->diag_ok;
-        $self->diag("$msg\n");
+        $self->chat("$msg\n");
         $self->run_hooks(install_success => {
             module => $module, build_dir => $dir, meta => $meta,
             local => $local, reinstall => $reinstall, depth => $depth,
